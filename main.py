@@ -3,6 +3,11 @@ import requests
 url = "https://apexapps.oracle.com/pls/apex/cetools/api/v1/products/"
 response = requests.get(url)
 data = response.json()
+def fetch_price(part_number):
+    return  [
+    item for item in data["items"]
+    if item.get("partNumber") == part_number
+    ]
 
 #cpu, ram, storage(could be boot)
 # Target filters
@@ -101,17 +106,11 @@ else:
 print(part_numbers)
 
 #finding cpu
-matching_cpu_items = [
-    item for item in data["items"]
-    if item.get("partNumber") == part_numbers[0]
-]
+matching_cpu_items = fetch_price(part_numbers[0])
 
 #finding ram
 if len(part_numbers) > 1:
-    matching_ram_items = [
-    item for item in data["items"]
-    if item.get("partNumber") == part_numbers[1]
-]
+    matching_ram_items = fetch_price(part_numbers[1])
 else: #no ram part means its bundeled along with cpu price
     matching_ram_items = 0
 
@@ -120,23 +119,18 @@ SOFlag = False # flag to see if shape is standard or VM.Optimized
 
 #finding storage
 if len(part_numbers) > 2:
-    matching_storage_items = [
-    item for item in data["items"]
-    if item.get("partNumber") == part_numbers[2]
-]
+    matching_storage_items = fetch_price(part_numbers[2])
+
+
 elif ('Standard' in target_shape) or ('Optimized' in target_shape): # standard and optimized parts use extra cloud(boot) storage
     SOFlag = True
-    matching_storage_items = [
-    item for item in data["items"]
-    if item.get("partNumber") == storage
-]
+    matching_storage_items = fetch_price(part_numbers[2])
 else: # no storage entirely means its bundled with cpu price
     matching_storage_items = 0
+
+
 #finding vpu price
-matching_vpu_items = [
-    item for item in data["items"]
-    if item.get("partNumber") == vpu
-]
+matching_vpu_items = fetch_price(part_numbers[3])
 
 
 price_value = []#array of cpu,ram,storage,vpu prices
